@@ -127,7 +127,7 @@ resource "aws_security_group" "allow_all" {
 resource "aws_instance" "jumphost" {
   ami                    = var.jumphost_ami_id
   instance_type          = var.jumphost_instance_type
-  # key_name               = var.jumphost_key_name
+  key_name               = var.jumphost_key_name
   subnet_id              = aws_subnet.public[0].id
   vpc_security_group_ids = [aws_security_group.allow_all.id]
   user_data              = var.install_tools_user_data
@@ -135,11 +135,6 @@ resource "aws_instance" "jumphost" {
   root_block_device {
     volume_size = 30
   }
-
-resource "aws_instance" "jumphost" {
-  ami           = var.jumphost_ami_id
-  instance_type = var.jumphost_instance_type
-  key_name      = var.jumphost_key_name
 
   tags = {
     Name = var.jumphost_name
