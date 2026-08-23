@@ -6,17 +6,21 @@
 # EXPOSE 80
 # CMD ["node", "index.js"]
 
-# Database Configuration
-DB_HOST=books-rds.cux0w262wytu.us-east-1.rds.amazonaws.com
-PORT=3306
-DB_USER=admin
-DB_PASSWORD=Cloud123
-DB_NAME=mydb
+FROM maven:3.9.9-amazoncorretto-11 AS builder
 
-# Server
-APP_PORT=80
-NODE_ENV=development
+WORKDIR /app
 
-# JWT
-JWT_SECRET=my_super_secret_key_123456789
-JWT_EXPIRES_IN=7d
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+FROM amazoncorretto:11-alpine-jdk
+
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
+EXPOSE 8084
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
