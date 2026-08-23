@@ -40,7 +40,7 @@ jobs:
 
             docker run -d \
               --name backend \
-              -p 8089:8084 \
+              -p 8089:8080 \
               -e DB_HOST=books-rds.cux0w262wytu.us-east-1.rds.amazonaws.com \
               -e PORT=3306 \
               -e DB_USER=admin \
