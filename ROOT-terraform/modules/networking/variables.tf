@@ -28,16 +28,15 @@ variable "jumphost_instance_type" {
   type        = string
 }
 
-# variable "jumphost_key_name" {
-#   description = "EC2 key pair name for the public jumphost server."
-#   type        = string
-# }
+variable "jumphost_key_name" {
+  description = "EC2 key pair name for the public jumphost server."
+  type        = string
+}
 
 variable "jumphost_name" {
   description = "Name tag for the public jumphost server."
   type        = string
 }
-
 
 variable "install_tools_user_data" {
   description = "User data script used to install tools on the public jumphost server."
