@@ -18,7 +18,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform ${{ inputs.action }}
+    name: Terraform ${{ github.event.inputs.action || 'apply' }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -26,9 +26,12 @@ jobs:
         working-directory: envs
 
     steps:
+
+      # Step 1: Checkout GitHub repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -36,23 +39,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
+      # Step 3: Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # Step 4: Terraform Initialize
       - name: Terraform Init
         run: terraform init
 
+      # Step 5: Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
+      # Step 6: Terraform Plan
       - name: Terraform Plan
-        if: inputs.action == 'apply'
+        if: github.event_name == 'push' || inputs.action == 'apply'
         run: terraform plan
 
+      # Step 7: Terraform Apply
       - name: Terraform Apply
-        if: inputs.action == 'apply'
+        if: github.event_name == 'push' || inputs.action == 'apply'
         run: terraform apply -auto-approve
 
+      # Step 8: Terraform Destroy
       - name: Terraform Destroy
-        if: inputs.action == 'destroy'
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy'
         run: terraform destroy -auto-approve
