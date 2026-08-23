@@ -1,4 +1,4 @@
-name: Frontend CI/CD
+name: Frontend CI/CD to EKS
 
 on:
   workflow_dispatch:
@@ -13,93 +13,76 @@ jobs:
 
     steps:
 
+      # Checkout GitHub repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # Docker Hub Login
-      # -----------------------------
+      # Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # -----------------------------
-      # Build Frontend Image
-      # -----------------------------
+      # Build frontend Docker image
       - name: Build Frontend Image
         run: |
           docker build \
+            -t kanavenavamshi/frontend:${{ github.sha }} \
             -t kanavenavamshi/frontend:latest \
             ./client
 
-      # -----------------------------
-      # Push Frontend Image
-      # -----------------------------
+      # Push Docker image
       - name: Push Frontend Image
         run: |
+          docker push kanavenavamshi/frontend:${{ github.sha }}
           docker push kanavenavamshi/frontend:latest
 
-      # -----------------------------
-      # AWS OIDC Authentication
-      # -----------------------------
+      # Configure AWS using GitHub OIDC
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::364410975057:role/OIDC-12
+          role-session-name: GitHubActions
           aws-region: us-east-1
 
-      # -----------------------------
-      # Verify AWS Authentication
-      # -----------------------------
+      # Verify AWS identity
       - name: Verify AWS Identity
         run: |
           aws sts get-caller-identity
 
-      # -----------------------------
-      # Configure EKS
-      # -----------------------------
+      # Connect to EKS cluster
       - name: Configure EKS
         run: |
           aws eks update-kubeconfig \
             --region us-east-1 \
             --name naresh
 
-      # -----------------------------
-      # Test EKS Connection
-      # -----------------------------
-      - name: Test EKS
+      # Verify Kubernetes connection
+      - name: Test EKS Connection
         run: |
           kubectl get nodes
 
-      # -----------------------------
-      # Deploy Frontend
-      # -----------------------------
+      # Deploy Kubernetes YAML
       - name: Deploy Frontend
         run: |
-          kubectl apply -f kubernetes-files/frontend-deploy-service.yml
+          kubectl apply \
+            -f client/kubernetes-files/frontend-deploy-service.yml
 
-      # -----------------------------
-      # Update Image
-      # -----------------------------
+      # Update deployment with the new Docker image
       - name: Update Frontend Image
         run: |
           kubectl set image deployment/frontend \
-            frontend=kanavenavamshi/frontend:latest
+            frontend=kanavenavamshi/frontend:${{ github.sha }}
 
-      # -----------------------------
-      # Wait for Deployment
-      # -----------------------------
-      - name: Wait for Frontend
+      # Wait until deployment is ready
+      - name: Wait for Frontend Deployment
         run: |
-          kubectl rollout status deployment/frontend --timeout=180s
+          kubectl rollout status deployment/frontend --timeout=300s
 
-      # -----------------------------
-      # Verify
-      # -----------------------------
-      - name: Verify Frontend Deployment
+      # Verify deployment
+      - name: Verify Deployment
         run: |
-          kubectl get deployment frontend
+          kubectl get deployment
           kubectl get pods
           kubectl get services
