@@ -6,21 +6,16 @@
 # EXPOSE 80
 # CMD ["node", "index.js"]
 
-FROM maven:3.9.9-amazoncorretto-11 AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+COPY package*.json ./
 
-RUN mvn clean package -DskipTests
+RUN npm ci
 
-FROM amazoncorretto:11-alpine-jdk
+COPY . .
 
-WORKDIR /app
+EXPOSE 8080
 
-COPY --from=builder /app/target/*.jar app.jar
-
-EXPOSE 8084
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["node", "index.js"]
