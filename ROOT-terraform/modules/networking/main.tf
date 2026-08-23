@@ -136,13 +136,11 @@ resource "aws_instance" "jumphost" {
     volume_size = 30
   }
 
-module "networking" {
-  source = "../modules/networking"
+resource "aws_instance" "jumphost" {
+  ami           = var.jumphost_ami_id
+  instance_type = var.jumphost_instance_type
+  key_name      = var.jumphost_key_name
 
-  ...
-
-  jumphost_key_name = var.jumphost_key_name
-}
   tags = {
     Name = var.jumphost_name
   }
