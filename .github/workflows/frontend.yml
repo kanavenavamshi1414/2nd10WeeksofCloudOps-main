@@ -21,10 +21,10 @@ jobs:
         run: |
           docker build -t kanavenavamshi/frontend:latest ./client
 
-      - name: Push frontend image
+      - name: Push frontend Docker image
         run: |
           docker push kanavenavamshi/frontend:latest
 
-      - name: Deploy to Kubernetes
+      - name: Deploy frontend to Kubernetes
         run: |
-          kubectl apply -f k8s/frontend.yml
+          kubectl apply -f kubernetes-files/frontend-deploy-service.yml
