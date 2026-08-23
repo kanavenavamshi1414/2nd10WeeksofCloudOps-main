@@ -28,7 +28,7 @@ module "networking" {
   availability_zones      = var.availability_zones
   jumphost_ami_id         = var.jumphost_ami_id
   jumphost_instance_type  = var.jumphost_instance_type
-  # jumphost_key_name = var.jumphost_key_name
+  jumphost_key_name = var.jumphost_key_name
   jumphost_name           = var.jumphost_name
   install_tools_user_data = templatefile("${path.module}/install-tools.sh", {})
 }
