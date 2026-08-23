@@ -19,7 +19,7 @@ jobs:
 
       - name: Build frontend Docker image
         run: |
-          docker build -t kanavenavamshi/frontend:latest ./frontend
+          docker build -t kanavenavamshi/frontend:latest ./client
 
       - name: Push frontend image
         run: |
